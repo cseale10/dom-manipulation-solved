@@ -38,3 +38,69 @@
  */
 
 // Your code goes here...
+
+function getFavorites() {
+  return JSON.parse(localStorage.getItem("favorites")) || [];
+}
+
+function setFavorites(favs) {
+  localStorage.setItem("favorites", JSON.stringify(favs));
+}
+
+function addFavorite(id) {
+  const favs = getFavorites();
+  if (!favs.includes(id)) {
+    favs.push(id);
+    setFavorites(favs);
+  }
+}
+
+function removeFavorite(id) {
+  let favs = getFavorites();
+  favs = favs.filter((favId) => favId !== id);
+  setFavorites(favs);
+}
+
+// ===== Apply saved favorites on page load =====
+function applyFavorites() {
+  const favs = getFavorites();
+  favs.forEach((favId) => {
+    const card = document.getElementById(favId);
+    if (card) {
+      card.style.backgroundColor = "red";
+      card.dataset.fav = "true";
+    }
+  });
+}
+
+// ===== Event delegation callback =====
+function handleCardClick(e) {
+  const card = e.target.closest(".card");
+  if (!card) return; // Ignore clicks outside of cards
+
+  const id = card.id;
+  const favs = getFavorites();
+
+  if (!favs.includes(id) && card.dataset.fav === "false") {
+    // Not in favorites → turn red and add to LS
+    card.style.backgroundColor = "red";
+    card.dataset.fav = "true";
+    addFavorite(id);
+  } else {
+    // In favorites → turn white and remove from LS
+    card.style.backgroundColor = "white";
+    card.dataset.fav = "false";
+    removeFavorite(id);
+  }
+}
+
+// ===== Initialization =====
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.querySelector(".cardsContainer");
+
+  // Restore saved favorites on load
+  applyFavorites();
+
+  // Event delegation for clicks
+  container.addEventListener("click", handleCardClick);
+});
